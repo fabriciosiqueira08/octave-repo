@@ -1,0 +1,10 @@
+RESULTADOS DA ANÁLISE METROLÓGICA
+=================================
+
+Equação da Curva de Erros:
+Erro = 0.005371 × Indicação + 0.005968
+
+Para pilha de 12V:
+Erro calculado: 0.0704 V
+Incerteza expandida: ±0.0790 V
+ERRO MÁXIMO: 0.1494 V
