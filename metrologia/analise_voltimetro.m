@@ -92,39 +92,64 @@ fprintf('Erro calculado: %.4f V\n', erro_12V);
 fprintf('Incerteza expandida: ±%.4f V\n', incerteza_12V);
 fprintf('ERRO MÁXIMO: %.4f V\n\n', erro_maximo_12V);
 
-% GRÁFICO: CURVA DE ERROS (Erro x Indicação)
+% GRÁFICO: CURVA DE ERROS (Erro x Indicação) - Modelo do Professor
 figure(1);
 clf;
 hold on;
 
-% Interpolar incerteza ao longo da curva
-incerteza_interpolada = interp1(indicacoes, incertezas, x_plot, 'linear', 'extrap');
+% Calcular o erro máximo para definir as linhas de referência
+E_max = max(abs([erros_medios])) + max(incertezas);
 
-% Criar região sombreada de incerteza
-y_superior = y_plot + incerteza_interpolada;
-y_inferior = y_plot - incerteza_interpolada;
-fill([x_plot, fliplr(x_plot)], [y_superior, fliplr(y_inferior)], 'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+% Definir faixa ampla para o gráfico (seguindo modelo da imagem)
+x_range = linspace(8, 22, 100);
+y_curva = polyval(coef, x_range);
 
-% Plotar ajuste linear (curva de erros)
-plot(x_plot, y_plot, 'r-');
+% Interpolar incerteza ao longo da curva ampla
+incerteza_range = interp1(indicacoes, incertezas, x_range, 'linear', 'extrap');
 
-% Plotar dados medidos (pontos)
-plot(indicacoes, erros_medios, 'ko', 'MarkerSize', 8);
+% Curvas de erro superior e inferior (envelope de incerteza)
+y_superior = y_curva + incerteza_range;
+y_inferior = y_curva - incerteza_range;
 
-% Marcar o erro em 12V
-plot(valor_12V, erro_12V, 'g*', 'MarkerSize', 12);
+% Plotar as linhas horizontais pontilhadas para Emáx e -Emáx
+x_lim = [8, 22];
+plot(x_lim, [E_max, E_max], 'k:', 'LineWidth', 1.5);
+plot(x_lim, [-E_max, -E_max], 'k:', 'LineWidth', 1.5);
 
-% Configurações do gráfico
-xlabel('Indicação (V)');
-ylabel('Erro (V)');
-title('Curva de Erros do Voltímetro Eletrônico');
+% Plotar curvas de erro (superior e inferior)
+plot(x_range, y_superior, 'g-', 'LineWidth', 2);
+plot(x_range, y_inferior, 'g-', 'LineWidth', 2);
+
+% Plotar ajuste linear principal (curva de erros central)
+plot(x_range, y_curva, 'b-', 'LineWidth', 2);
+
+% Plotar dados medidos (pontos) - estilo similar à imagem
+plot(indicacoes, erros_medios, 'wo', 'MarkerSize', 10, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'k', 'LineWidth', 1.5);
+
+% Marcar o erro em 12V com destaque
+plot(valor_12V, erro_12V, 'co', 'MarkerSize', 12, 'MarkerFaceColor', 'c', 'MarkerEdgeColor', 'k', 'LineWidth', 2);
+
+% Adicionar texto para Emáx (seguindo modelo da imagem)
+text(8.5, E_max + 0.005, 'E_{máx}', 'FontSize', 12, 'FontWeight', 'bold');
+text(8.5, -E_max - 0.015, '-E_{máx}', 'FontSize', 12, 'FontWeight', 'bold');
+
+% Marcar ponto especial (equivalente ao "1015" da imagem)
+plot(valor_12V, 0, 'v', 'MarkerSize', 8, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k');
+text(valor_12V, -0.025, '12V', 'FontSize', 10, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+
+% Configurações do gráfico (seguindo modelo)
+xlabel('indicação', 'FontSize', 14, 'FontWeight', 'bold');
+ylabel('erro', 'FontSize', 14, 'FontWeight', 'bold');
+title('Curva de erros', 'FontSize', 16, 'FontWeight', 'bold');
 grid on;
-grid minor;  % Grade mais fina para melhor precisão
-legend('Incerteza (±2σ)', 'Ajuste Linear', 'Dados Medidos', 'Erro em 12V', 'Location', 'northwest');
 
-% Ajustar limites dos eixos para escala mais precisa
-xlim([9.8 20.4]);     % Foco na faixa dos dados (10V a 20V)
-ylim([0.00 0.15]);    % Foco na faixa dos erros (0 a 0.15V)
+% Ajustar limites dos eixos para seguir o modelo
+xlim([8, 22]);
+ylim([-E_max*1.3, E_max*1.3]);
+
+% Melhorar aparência geral
+set(gca, 'FontSize', 12);
+set(gca, 'LineWidth', 1.2);
 
 % Salvar gráfico como PNG
 print('curva_erros_voltimetro.png', '-dpng', '-r300');
@@ -144,10 +169,12 @@ fclose(fid);
 fprintf('Análise concluída! Arquivos gerados:\n');
 fprintf('  ✓ Resultados: "resultados_analise.txt"\n');
 fprintf('  ✓ Gráfico PNG: "curva_erros_voltimetro.png"\n');
-fprintf('  ✓ Curva de Erros exibida na Figura 1\n');
+fprintf('  ✓ Curva de Erros exibida na Figura 1 (modelo do professor)\n');
 
 % Análise concluída com sucesso!
 fprintf('\n=== RESUMO FINAL ===\n');
 fprintf('✓ Curva de Erros: Erro = %.6f × Indicação + %.6f\n', slope, intercept);
 fprintf('✓ Erro Máximo para 12V: %.4f V\n', erro_maximo_12V);
+fprintf('✓ Erro Máximo Geral (Emáx): %.4f V\n', E_max);
+fprintf('✓ Gráfico reformatado conforme modelo do professor\n');
 fprintf('✓ Arquivos salvos com sucesso!\n'); 
